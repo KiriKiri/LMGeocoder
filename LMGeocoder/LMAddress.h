@@ -75,5 +75,5 @@
  *  @return object with all data set for use
  */
 - (id)initWithLocationData:(id)locationData forServiceType:(int)serviceType;
-
+- (id)initWithGoogleLocationData:(id)locationData;
 @end

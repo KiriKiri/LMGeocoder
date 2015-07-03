@@ -66,6 +66,14 @@ static NSString *const LMCountryCodeKey         = @"countryCode";
     return self;
 }
 
+- (id)initWithGoogleLocationData:(NSDictionary *)locationDict {
+    self = [self init];
+    if (self) {
+        [self fillGoogleLocationDict:locationDict];
+    }
+    return self;
+}
+
 
 #pragma mark - PARSING
 
@@ -105,26 +113,31 @@ static NSString *const LMCountryCodeKey         = @"countryCode";
         self.isValid = YES;
         
         NSDictionary *locationDict = [[resultDict objectForKey:@"results"] objectAtIndex:0];
-        NSArray *addressComponents = [locationDict objectForKey:@"address_components"];
-        NSString *formattedAddrs = [locationDict objectForKey:@"formatted_address"];
-        double lat = [[[[locationDict objectForKey:@"geometry"] objectForKey:@"location"] valueForKey:@"lat"] doubleValue];
-        double lng = [[[[locationDict objectForKey:@"geometry"] objectForKey:@"location"] valueForKey:@"lng"] doubleValue];
-        
-        self.coordinate = CLLocationCoordinate2DMake(lat, lng);
-        self.streetNumber = [self component:@"street_number" inArray:addressComponents ofType:@"long_name"];
-        self.route = [self component:@"route" inArray:addressComponents ofType:@"long_name"];
-        self.locality = [self component:@"locality" inArray:addressComponents ofType:@"long_name"];
-        self.subLocality = [self component:@"subLocality" inArray:addressComponents ofType:@"long_name"];
-        self.administrativeArea = [self component:@"administrative_area_level_1" inArray:addressComponents ofType:@"long_name"];
-        self.postalCode = [self component:@"postal_code" inArray:addressComponents ofType:@"short_name"];
-        self.country = [self component:@"country" inArray:addressComponents ofType:@"long_name"];
-        self.countryCode = [self component:@"country" inArray:addressComponents ofType:@"short_name"];
-        self.formattedAddress = formattedAddrs;
+        [self fillGoogleLocationDict:locationDict];
     }
     else
     {
         self.isValid = NO;
     }
+}
+
+- (void) fillGoogleLocationDict:(NSDictionary *)locationDict
+{
+    NSArray *addressComponents = [locationDict objectForKey:@"address_components"];
+    NSString *formattedAddrs = [locationDict objectForKey:@"formatted_address"];
+    double lat = [[[[locationDict objectForKey:@"geometry"] objectForKey:@"location"] valueForKey:@"lat"] doubleValue];
+    double lng = [[[[locationDict objectForKey:@"geometry"] objectForKey:@"location"] valueForKey:@"lng"] doubleValue];
+    
+    self.coordinate = CLLocationCoordinate2DMake(lat, lng);
+    self.streetNumber = [self component:@"street_number" inArray:addressComponents ofType:@"long_name"];
+    self.route = [self component:@"route" inArray:addressComponents ofType:@"long_name"];
+    self.locality = [self component:@"locality" inArray:addressComponents ofType:@"long_name"];
+    self.subLocality = [self component:@"subLocality" inArray:addressComponents ofType:@"long_name"];
+    self.administrativeArea = [self component:@"administrative_area_level_1" inArray:addressComponents ofType:@"long_name"];
+    self.postalCode = [self component:@"postal_code" inArray:addressComponents ofType:@"short_name"];
+    self.country = [self component:@"country" inArray:addressComponents ofType:@"long_name"];
+    self.countryCode = [self component:@"country" inArray:addressComponents ofType:@"short_name"];
+    self.formattedAddress = formattedAddrs;
 }
 
 - (NSString *)component:(NSString *)component inArray:(NSArray *)array ofType:(NSString *)type

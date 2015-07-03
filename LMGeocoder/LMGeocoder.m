@@ -195,12 +195,22 @@
 
 - (void)parseGeocodingResultData:(id)resultData
 {
-    LMAddress *resultAddress = [[LMAddress alloc] initWithLocationData:resultData
-                                                        forServiceType:self.currentService];
-    if (resultAddress.isValid)
+    NSArray *addresses;
+    switch (self.currentService) {
+        case kLMGeocoderGoogleService:
+            addresses = [self parseGoogleGeocodingResultData:resultData];
+            break;
+        case kLMGeocoderAppleService:
+            addresses = [self parseAppleGeocodingResultData:resultData];
+            break;
+        default:
+            break;
+    }
+    
+    if ([addresses count] > 0)
     {
         if (self.completionHandler) {
-            self.completionHandler(resultAddress, nil);
+            self.completionHandler(addresses, nil);
         }
     }
     else
@@ -213,6 +223,37 @@
             self.completionHandler(nil, error);
         }
     }
+}
+
+- (NSArray *) parseAppleGeocodingResultData:(id)resultData
+{
+    LMAddress *resultAddress = [[LMAddress alloc] initWithLocationData:resultData
+                                                        forServiceType:self.currentService];
+    if (resultAddress.isValid) {
+        return @[resultAddress];
+    }
+    
+    return @[];
+}
+
+- (NSArray *) parseGoogleGeocodingResultData:(id)resultData
+{
+    NSMutableArray *result = [[NSMutableArray alloc] init];
+    NSDictionary *resultDict = (NSDictionary *)resultData;
+    NSString *status = [resultDict valueForKey:@"status"];
+    
+    if ([status isEqualToString:@"OK"])
+    {
+        for (NSDictionary *locationDict in [resultData objectForKey:@"results"]) {
+            LMAddress *resultAddress = [[LMAddress alloc] initWithGoogleLocationData:locationDict];
+            if (resultAddress.isValid) {
+                [result addObject:resultAddress];
+            }
+        }
+        
+    }
+    
+    return [NSArray arrayWithArray:result];
 }
 
 @end

@@ -29,7 +29,7 @@ typedef NS_ENUM(NSInteger, LMGeocoderErrorCode){
 /*!
  *  Handler that reports a geocoding response, or error
  */
-typedef void (^LMGeocodeCallback) (LMAddress *address, NSError *error);
+typedef void (^LMGeocodeCallback) (NSArray *addresses, NSError *error);
 
 /*!
  * Exposes a service for geocoding and reverse geocoding. 
